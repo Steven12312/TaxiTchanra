@@ -1,0 +1,6 @@
+# robots.txt – Taxi Hanau Tchanra
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://taxi-hanau-tchanra.de/sitemap.xml

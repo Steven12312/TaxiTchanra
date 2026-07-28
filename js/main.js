@@ -36,11 +36,13 @@ function initStickyHeader() {
 function initNavigation() {
   const burger = document.querySelector('.burger');
   const nav = document.querySelector('.header__nav');
+  const header = document.querySelector('.header');
   if (!burger || !nav) return;
 
   burger.addEventListener('click', () => {
     const isOpen = burger.classList.toggle('burger--open');
     nav.classList.toggle('header__nav--open', isOpen);
+    if (header) header.classList.toggle('header--menu-open', isOpen);
     document.body.style.overflow = isOpen ? 'hidden' : '';
     burger.setAttribute('aria-expanded', isOpen);
   });
@@ -50,6 +52,7 @@ function initNavigation() {
     link.addEventListener('click', () => {
       burger.classList.remove('burger--open');
       nav.classList.remove('header__nav--open');
+      if (header) header.classList.remove('header--menu-open');
       document.body.style.overflow = '';
       burger.setAttribute('aria-expanded', 'false');
     });
@@ -60,6 +63,7 @@ function initNavigation() {
     if (e.key === 'Escape' && nav.classList.contains('header__nav--open')) {
       burger.classList.remove('burger--open');
       nav.classList.remove('header__nav--open');
+      if (header) header.classList.remove('header--menu-open');
       document.body.style.overflow = '';
       burger.setAttribute('aria-expanded', 'false');
     }

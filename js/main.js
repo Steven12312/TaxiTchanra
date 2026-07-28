@@ -300,7 +300,7 @@ function initWhatsAppWidget() {
 
   goBtn.addEventListener('click', () => {
     if (consentCheck.checked) {
-      window.open('https://wa.me/491763179162?text=Hallo%20Taxi%20Tchanra,%20ich%20m%C3%B6chte%20eine%20Fahrt%20anfragen.', '_blank');
+      window.open('https://wa.me/4917631791627?text=Hallo%20Taxi%20Tchanra,%20ich%20m%C3%B6chte%20eine%20Fahrt%20anfragen.', '_blank');
       modalOverlay.classList.remove('wa-modal--open');
     }
   });

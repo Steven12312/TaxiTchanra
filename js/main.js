@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initForms();
   initTabs();
   initStickyHeader();
+  initGoogleMapsConsent();
   initWhatsAppWidget();
 });
 
@@ -207,19 +208,68 @@ function initTabs() {
     const buttons = nav.querySelectorAll('.tab-nav__btn');
     const panels = nav.parentElement.querySelectorAll('.tab-panel');
 
+    const activateTab = (target) => {
+      buttons.forEach(b => {
+        const isActive = b.dataset.tab === target;
+        b.classList.toggle('tab-nav__btn--active', isActive);
+        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      panels.forEach(panel => {
+        panel.classList.toggle('tab-panel--active', panel.id === target);
+      });
+    };
+
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
-        const target = btn.dataset.tab;
-
-        // Update buttons
-        buttons.forEach(b => b.classList.remove('tab-nav__btn--active'));
-        btn.classList.add('tab-nav__btn--active');
-
-        // Update panels
-        panels.forEach(panel => {
-          panel.classList.toggle('tab-panel--active', panel.id === target);
-        });
+        activateTab(btn.dataset.tab);
       });
+    });
+
+    const hashToTab = {
+      '#kontakt': 'tab-kontakt',
+      '#impressum': 'tab-impressum',
+      '#datenschutz': 'tab-datenschutz'
+    };
+
+    if (hashToTab[window.location.hash]) {
+      activateTab(hashToTab[window.location.hash]);
+    }
+
+    document.querySelectorAll('a[href$="#kontakt"], a[href$="#impressum"], a[href$="#datenschutz"]').forEach(link => {
+      link.addEventListener('click', () => {
+        const hash = new URL(link.href, window.location.href).hash;
+        if (hashToTab[hash]) {
+          activateTab(hashToTab[hash]);
+        }
+      });
+    });
+  });
+}
+
+/* ---------- Google Maps 2-Click Consent ---------- */
+function initGoogleMapsConsent() {
+  const buttons = document.querySelectorAll('.map-consent__btn[data-map-src]');
+  if (!buttons.length) return;
+
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      const wrapper = button.closest('.map-wrapper');
+      const src = button.dataset.mapSrc;
+      if (!wrapper || !src) return;
+
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.width = '100%';
+      iframe.height = '400';
+      iframe.style.border = '0';
+      iframe.allowFullscreen = true;
+      iframe.loading = 'lazy';
+      iframe.referrerPolicy = 'no-referrer-when-downgrade';
+      iframe.title = button.dataset.mapTitle || 'Google Maps Karte';
+
+      wrapper.classList.remove('map-consent');
+      wrapper.replaceChildren(iframe);
     });
   });
 }

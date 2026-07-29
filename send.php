@@ -84,7 +84,6 @@ if (!empty($message)) {
 }
 $emailBody .= "\n===================================================\n";
 $emailBody .= "Gesendet am: " . date('d.m.Y H:i:s') . "\n";
-$emailBody .= "IP-Adresse:  " . ($_SERVER['REMOTE_ADDR'] ?? 'Unbekannt') . "\n";
 
 // Headers
 $headers   = [];

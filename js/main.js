@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initStickyHeader();
   initGoogleMapsConsent();
   initWhatsAppWidget();
+  initAddressAutocomplete();
 });
 
 /* ---------- Sticky Header ---------- */
@@ -359,3 +360,176 @@ function initWhatsAppWidget() {
     }
   });
 }
+
+/* ---------- DSGVO Address Autocomplete ---------- */
+function initAddressAutocomplete() {
+  const input = document.getElementById('landing-pickup');
+  const resultsList = document.getElementById('autocomplete-results');
+  const optInBtn = document.getElementById('btn-optin-live-address');
+  const statusBadge = document.getElementById('autocomplete-status-badge');
+
+  if (!input || !resultsList) return;
+
+  let isLiveActive = false;
+  let debounceTimer = null;
+  let activeIndex = -1;
+
+  // Toggle Live Search Opt-In
+  if (optInBtn) {
+    optInBtn.addEventListener('click', () => {
+      isLiveActive = !isLiveActive;
+      if (isLiveActive) {
+        optInBtn.classList.add('btn-optin-live--active');
+        optInBtn.textContent = '✓ Live-Suche aktiv';
+        if (statusBadge) {
+          statusBadge.textContent = '🌐 Live-Online-Suche aktiv (OpenStreetMap)';
+          statusBadge.style.color = 'var(--color-green)';
+        }
+        input.removeAttribute('list'); // Remove native datalist to use custom live results UI
+      } else {
+        optInBtn.classList.remove('btn-optin-live--active');
+        optInBtn.textContent = '🌐 Live-Online-Suche aktivieren';
+        if (statusBadge) {
+          statusBadge.textContent = '🔒 Lokale Adresssuche (DSGVO-sicher)';
+          statusBadge.style.color = 'var(--color-gray-400)';
+        }
+        input.setAttribute('list', 'hanau-address-list');
+        hideResults();
+      }
+    });
+  }
+
+  function hideResults() {
+    resultsList.hidden = true;
+    resultsList.innerHTML = '';
+    activeIndex = -1;
+  }
+
+  function showResults(items) {
+    if (!items.length) {
+      hideResults();
+      return;
+    }
+
+    resultsList.innerHTML = items.map((item, index) => `
+      <li class="autocomplete-item" role="option" data-index="${index}" data-val="${escapeHtml(item.formatted)}">
+        <span class="autocomplete-item-icon" aria-hidden="true">${item.icon || '📍'}</span>
+        <span>${escapeHtml(item.formatted)}</span>
+      </li>
+    `).join('');
+
+    resultsList.hidden = false;
+    activeIndex = -1;
+
+    resultsList.querySelectorAll('.autocomplete-item').forEach(el => {
+      el.addEventListener('click', () => {
+        input.value = el.dataset.val;
+        hideResults();
+      });
+    });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Fetch live recommendations from OpenStreetMap / Photon API
+  function fetchLiveSuggestions(query) {
+    if (!query || query.length < 3) {
+      hideResults();
+      return;
+    }
+
+    // Latitude/Longitude for Hanau region to prioritize local results
+    const hanauLat = 50.1332;
+    const hanauLon = 8.9167;
+    const apiUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=de&limit=5&lat=${hanauLat}&lon=${hanauLon}`;
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (!data || !data.features) {
+          hideResults();
+          return;
+        }
+
+        const items = data.features.map(feat => {
+          const props = feat.properties;
+          const name = props.name || '';
+          const street = props.street ? (props.street + (props.housenumber ? ' ' + props.housenumber : '')) : '';
+          const city = props.city || props.town || props.village || props.county || '';
+          const postcode = props.postcode || '';
+
+          let formatted = [street || name, postcode, city].filter(Boolean).join(', ');
+          if (!formatted) formatted = name || city;
+
+          return {
+            formatted: formatted,
+            icon: props.osm_key === 'aeroway' ? '✈️' : (props.osm_key === 'railway' ? '🚆' : '📍')
+          };
+        });
+
+        showResults(items);
+      })
+      .catch(err => {
+        console.warn('Live address search unavailable:', err);
+        hideResults();
+      });
+  }
+
+  // Handle Input Typing
+  input.addEventListener('input', () => {
+    if (!isLiveActive) return;
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      fetchLiveSuggestions(input.value.trim());
+    }, 300);
+  });
+
+  // Handle Keyboard Navigation
+  input.addEventListener('keydown', (e) => {
+    if (resultsList.hidden) return;
+
+    const items = resultsList.querySelectorAll('.autocomplete-item');
+    if (!items.length) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = (activeIndex - 1 + items.length) % items.length;
+      updateActiveItem(items);
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      items[activeIndex].click();
+    } else if (e.key === 'Escape') {
+      hideResults();
+    }
+  });
+
+  function updateActiveItem(items) {
+    items.forEach((item, idx) => {
+      if (idx === activeIndex) {
+        item.classList.add('autocomplete-item--active');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('autocomplete-item--active');
+      }
+    });
+  }
+
+  // Close list on outside click
+  document.addEventListener('click', (e) => {
+    if (!input.contains(e.target) && !resultsList.contains(e.target)) {
+      hideResults();
+    }
+  });
+}
+

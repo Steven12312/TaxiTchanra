@@ -2158,3 +2158,82 @@ button {
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
 }
+
+/* ---------- DSGVO Address Autocomplete Styles ---------- */
+.autocomplete-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: 4px;
+  background: var(--color-dark-card);
+  border: 1px solid rgba(245, 197, 24, 0.5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl), 0 0 20px rgba(245, 197, 24, 0.2);
+  max-height: 240px;
+  overflow-y: auto;
+  list-style: none;
+  padding: 4px 0;
+}
+
+.autocomplete-item {
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--color-gray-200);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item--active {
+  background: rgba(245, 197, 24, 0.15);
+  color: var(--color-gold);
+}
+
+.autocomplete-item-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.autocomplete-hint {
+  font-size: 0.75rem;
+  color: var(--color-gray-400);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+}
+
+.btn-optin-live {
+  background: transparent;
+  border: 1px dashed var(--color-gold);
+  color: var(--color-gold);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-optin-live:hover {
+  background: var(--color-gold);
+  color: var(--color-dark);
+}
+
+.btn-optin-live.btn-optin-live--active {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-white);
+}
+

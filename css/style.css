@@ -1890,13 +1890,138 @@ button {
   border: 1px solid rgba(255,255,255,0.2);
 }
 
+/* ============================================================
+   MOBILE & SMARTPHONE OPTIMIZATIONS
+   ============================================================ */
 @media (max-width: 767px) {
-  .mobile-cta {
-    display: block;
+  /* Prevent iOS Auto-Zoom on Input Focus */
+  input, select, textarea,
+  .form__input, .form__select, .form__textarea,
+  .landing__form .form__input, .landing__form .form__select, .landing__form .form__textarea {
+    font-size: 16px !important;
+    height: 48px;
+  }
+  .form__textarea, .landing__form .form__textarea {
+    height: auto;
   }
 
+  /* Safe padding for mobile bottom bar */
   body {
-    padding-bottom: 72px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Mobile CTA sticky bar */
+  .mobile-cta {
+    display: block;
+    padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Floating WhatsApp Button on Mobile */
+  .wa-float {
+    bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+    right: 14px;
+    width: 54px;
+    height: 54px;
+  }
+  .wa-float-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Typography & Titles scaling */
+  .hero__title {
+    font-size: 1.85rem !important;
+    line-height: 1.2;
+  }
+
+  .landing__title {
+    font-size: 1.65rem !important;
+    line-height: 1.25;
+  }
+
+  .landing__subtitle {
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .landing__price-badge {
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    max-width: 100%;
+  }
+
+  /* Form Container Padding */
+  .landing__form-wrap {
+    padding: 1.25rem 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .form__row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  /* Landing Topbar */
+  .landing__topbar {
+    padding: 0.75rem 0;
+    gap: 0.5rem;
+  }
+
+  .header__logo-img {
+    height: 38px;
+  }
+
+  .landing__phone-top {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    background: rgba(245, 197, 24, 0.1);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Benefits Grid */
+  .landing__benefits {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .landing__benefit {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.75rem 0.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .landing__trust-row {
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+  }
+
+  .landing__trust-item {
+    font-size: 0.8rem;
+  }
+
+  /* Tables horizontal scrolling */
+  .tariff-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 1rem 0;
+  }
+
+  /* Touch Targets */
+  .btn, button, a {
+    min-height: 44px;
+  }
+
+  /* Autocomplete Dropdown List positioning on small screens */
+  .autocomplete-list {
+    max-height: 200px;
+  }
+  .autocomplete-item {
+    padding: 12px 14px;
+    font-size: 0.95rem;
   }
 }
 

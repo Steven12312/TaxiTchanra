@@ -87,7 +87,7 @@ $emailBody .= "Gesendet am: " . date('d.m.Y H:i:s') . "\n";
 
 // Headers
 $headers   = [];
-$headers[] = 'From: Taxi Hanau Tchanra Website <noreply@taxi-hanau-tchanra.de>';
+$headers[] = 'From: Taxi Hanau Tchanra Website <noreply@hanau-taxi-tchanra.de>';
 if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $headers[] = "Reply-To: $email";
 }

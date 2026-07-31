@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://taxi-hanau-tchanra.de/sitemap.xml
+Sitemap: https://hanau-taxi-tchanra.de/sitemap.xml

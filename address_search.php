@@ -24,7 +24,7 @@ curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_TIMEOUT, 3);
 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-curl_setopt($ch, CURLOPT_USERAGENT, 'TaxiTchanra/1.0 (https://taxi-hanau-tchanra.de)');
+curl_setopt($ch, CURLOPT_USERAGENT, 'TaxiTchanra/1.0 (https://hanau-taxi-tchanra.de)');
 
 $response = curl_exec($ch);
 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

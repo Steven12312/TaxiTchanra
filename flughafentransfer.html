@@ -137,60 +137,12 @@
               <div class="form__group">
                 <label for="landing-pickup" class="form__label">Abholadresse *</label>
                 <div class="autocomplete-wrapper" style="position:relative;">
-                  <input type="text" id="landing-pickup" name="pickup" class="form__input autocomplete-input" placeholder="z.B. Kurfürstenstraße 5, Hanau" autocomplete="off" list="hanau-address-list" required aria-autocomplete="list">
+                  <input type="text" id="landing-pickup" name="pickup" class="form__input autocomplete-input" placeholder="z.B. Kurfürstenstraße 5, Hanau oder Schlossplatz, Aschaffenburg" autocomplete="off" required aria-autocomplete="list">
                   <ul id="autocomplete-results" class="autocomplete-list" role="listbox" hidden></ul>
                 </div>
-                <datalist id="hanau-address-list">
-                  <!-- Flughafen & Hbf Terminals -->
-                  <option value="Flughafen Frankfurt am Main (FRA) Terminal 1">
-                  <option value="Flughafen Frankfurt am Main (FRA) Terminal 2">
-                  <option value="Hanau Hauptbahnhof (Am Hauptbahnhof, 63450 Hanau)">
-                  <option value="Frankfurt am Main Hauptbahnhof">
-                  <!-- Hanau Innenstadt & Ortsteile -->
-                  <option value="Kurfürstenstraße 5, 63452 Hanau">
-                  <option value="Nürnberger Straße, 63450 Hanau">
-                  <option value="Kramerstraße, 63450 Hanau">
-                  <option value="Rosenstraße, 63450 Hanau">
-                  <option value="Hospitalstraße, 63450 Hanau">
-                  <option value="Eugen-Kaiser-Straße, 63450 Hanau">
-                  <option value="Hammerstraße, 63450 Hanau">
-                  <option value="Steinheimer Straße, 63450 Hanau">
-                  <option value="Brüder-Grimm-Straße, 63450 Hanau">
-                  <option value="Am Markt, 63450 Hanau">
-                  <option value="Bruchköbler Landstraße, 63452 Hanau">
-                  <option value="Lamboystraße, 63452 Hanau">
-                  <option value="Maintaler Straße, 63456 Hanau">
-                  <option value="Leipziger Straße, 63450 Hanau">
-                  <option value="Rodenbacher Chaussee, 63457 Hanau">
-                  <option value="Hanau Steinheim">
-                  <option value="Hanau Klein-Auheim">
-                  <option value="Hanau Großauheim">
-                  <option value="Hanau Kesselstadt">
-                  <option value="Hanau Lamboy">
-                  <option value="Hanau Mittelbuchen">
-                  <option value="Hanau Wolfgang">
-                  <!-- Umland Ortsteile & Nachbarstädte -->
-                  <option value="Bruchköbel (63486)">
-                  <option value="Maintal (Dörnigheim / Bischofsheim / Hochstadt)">
-                  <option value="Erlensee (Rückingen / Langendiebach)">
-                  <option value="Rodenbach (Niederrodenbach / Oberrodenbach)">
-                  <option value="Langenselbold (63505)">
-                  <option value="Großkrotzenburg (63538)">
-                  <option value="Nidderau (Heldenbergen / Windecken)">
-                  <option value="Schöneck (Kilianstädten / Büdesheim)">
-                  <option value="Offenbach am Main">
-                  <option value="Gelnhausen">
-                  <option value="Rodgau">
-                  <option value="Freigericht">
-                  <option value="Hainburg (Hainstadt / Klein-Krotzenburg)">
-                  <option value="Seligenstadt">
-                </datalist>
-                <div class="form__hint autocomplete-hint" style="margin-top:0.4rem; font-size:0.75rem; color:var(--color-gray-400); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.25rem;">
-                  <span id="autocomplete-status-badge">🔒 Lokale Adresssuche (DSGVO-sicher)</span>
-                  <button type="button" class="btn-optin-live" id="btn-optin-live-address" title="Live-Suche per OpenStreetMap aktivieren (DSGVO Opt-In)">
-                    🌐 Live-Online-Suche aktivieren
-                  </button>
-                </div>
+                <span style="font-size:0.75rem; color:var(--color-gray-400); display:block; margin-top:0.35rem; line-height:1.3;">
+                  ⚡ Automatische Adressvorschläge beim Tippen (Hanau, Aschaffenburg &amp; Umland) oder Adresse frei eingeben.
+                </span>
               </div>
 
               <div class="form__group">

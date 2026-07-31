@@ -365,39 +365,11 @@ function initWhatsAppWidget() {
 function initAddressAutocomplete() {
   const input = document.getElementById('landing-pickup');
   const resultsList = document.getElementById('autocomplete-results');
-  const optInBtn = document.getElementById('btn-optin-live-address');
-  const statusBadge = document.getElementById('autocomplete-status-badge');
 
   if (!input || !resultsList) return;
 
-  let isLiveActive = false;
   let debounceTimer = null;
   let activeIndex = -1;
-
-  // Toggle Live Search Opt-In
-  if (optInBtn) {
-    optInBtn.addEventListener('click', () => {
-      isLiveActive = !isLiveActive;
-      if (isLiveActive) {
-        optInBtn.classList.add('btn-optin-live--active');
-        optInBtn.textContent = '✓ Live-Suche aktiv';
-        if (statusBadge) {
-          statusBadge.textContent = '🌐 Live-Online-Suche aktiv (OpenStreetMap)';
-          statusBadge.style.color = 'var(--color-green)';
-        }
-        input.removeAttribute('list'); // Remove native datalist to use custom live results UI
-      } else {
-        optInBtn.classList.remove('btn-optin-live--active');
-        optInBtn.textContent = '🌐 Live-Online-Suche aktivieren';
-        if (statusBadge) {
-          statusBadge.textContent = '🔒 Lokale Adresssuche (DSGVO-sicher)';
-          statusBadge.style.color = 'var(--color-gray-400)';
-        }
-        input.setAttribute('list', 'hanau-address-list');
-        hideResults();
-      }
-    });
-  }
 
   function hideResults() {
     resultsList.hidden = true;
@@ -406,7 +378,7 @@ function initAddressAutocomplete() {
   }
 
   function showResults(items) {
-    if (!items.length) {
+    if (!items || !items.length) {
       hideResults();
       return;
     }
@@ -437,58 +409,39 @@ function initAddressAutocomplete() {
       .replace(/"/g, '&quot;');
   }
 
-  // Fetch live recommendations from OpenStreetMap / Photon API
-  function fetchLiveSuggestions(query) {
-    if (!query || query.length < 3) {
+  // Fetch recommendations from local PHP proxy (address_search.php)
+  function fetchAddressSuggestions(query) {
+    if (!query || query.length < 2) {
       hideResults();
       return;
     }
 
-    // Latitude/Longitude for Hanau region to prioritize local results
-    const hanauLat = 50.1332;
-    const hanauLon = 8.9167;
-    const apiUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&lang=de&limit=5&lat=${hanauLat}&lon=${hanauLon}`;
+    const apiUrl = `address_search.php?q=${encodeURIComponent(query)}`;
 
     fetch(apiUrl)
       .then(res => res.json())
-      .then(data => {
-        if (!data || !data.features) {
-          hideResults();
-          return;
-        }
-
-        const items = data.features.map(feat => {
-          const props = feat.properties;
-          const name = props.name || '';
-          const street = props.street ? (props.street + (props.housenumber ? ' ' + props.housenumber : '')) : '';
-          const city = props.city || props.town || props.village || props.county || '';
-          const postcode = props.postcode || '';
-
-          let formatted = [street || name, postcode, city].filter(Boolean).join(', ');
-          if (!formatted) formatted = name || city;
-
-          return {
-            formatted: formatted,
-            icon: props.osm_key === 'aeroway' ? '✈️' : (props.osm_key === 'railway' ? '🚆' : '📍')
-          };
-        });
-
+      .then(items => {
         showResults(items);
       })
       .catch(err => {
-        console.warn('Live address search unavailable:', err);
+        console.warn('Address search unavailable:', err);
         hideResults();
       });
   }
 
-  // Handle Input Typing
+  // Handle Input Typing (Automatic as user types)
   input.addEventListener('input', () => {
-    if (!isLiveActive) return;
-
+    const val = input.value.trim();
     clearTimeout(debounceTimer);
+
+    if (val.length < 2) {
+      hideResults();
+      return;
+    }
+
     debounceTimer = setTimeout(() => {
-      fetchLiveSuggestions(input.value.trim());
-    }, 300);
+      fetchAddressSuggestions(val);
+    }, 250);
   });
 
   // Handle Keyboard Navigation

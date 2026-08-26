@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initGoogleMapsConsent();
   initWhatsAppWidget();
   initAddressAutocomplete();
+  initCookieConsent();
 });
 
 /* ---------- Sticky Header ---------- */
@@ -283,8 +284,110 @@ document.addEventListener('click', (e) => {
       event_category: 'Contact',
       event_label: phoneLink.href
     });
+    gtag('event', 'conversion', {
+      'send_to': 'AW-11364909431/phone_click'
+    });
   }
 });
+
+/* ---------- Cookie Consent Management (DSGVO / Consent Mode v2) ---------- */
+function initCookieConsent() {
+  const CONSENT_KEY = 'taxi_tchanra_cookie_consent';
+
+  function updateGoogleConsent(granted) {
+    if (typeof gtag === 'function') {
+      gtag('consent', 'update', {
+        'ad_storage': granted ? 'granted' : 'denied',
+        'ad_user_data': granted ? 'granted' : 'denied',
+        'ad_personalization': granted ? 'granted' : 'denied',
+        'analytics_storage': granted ? 'granted' : 'denied'
+      });
+    }
+  }
+
+  function renderBanner() {
+    if (document.getElementById('cookie-consent-banner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'cookie-consent-banner';
+    banner.className = 'cookie-banner';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-live', 'polite');
+    banner.setAttribute('aria-label', 'Cookie-Einwilligung');
+
+    banner.innerHTML = `
+      <div class="cookie-banner__content">
+        <div class="cookie-banner__text">
+          <div class="cookie-banner__title">🍪 Privatsphäre-Einstellungen</div>
+          <p>
+            Wir nutzen den <strong>Google Tag</strong> zur Messung von Conversions und Anfragen, um unseren Service zu optimieren. 
+            Sie können selbst entscheiden, welche Cookies Sie zulassen möchten. Details finden Sie in unserer 
+            <a href="kontakt.html#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.
+          </p>
+        </div>
+        <div class="cookie-banner__actions">
+          <button type="button" class="cookie-banner__btn cookie-banner__btn--accept" id="cookie-accept-all">
+            Alle akzeptieren
+          </button>
+          <button type="button" class="cookie-banner__btn cookie-banner__btn--deny" id="cookie-deny-all">
+            Nur essenzielle
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(banner);
+
+    document.getElementById('cookie-accept-all').addEventListener('click', () => {
+      localStorage.setItem(CONSENT_KEY, 'granted');
+      updateGoogleConsent(true);
+      closeBanner();
+    });
+
+    document.getElementById('cookie-deny-all').addEventListener('click', () => {
+      localStorage.setItem(CONSENT_KEY, 'denied');
+      updateGoogleConsent(false);
+      closeBanner();
+    });
+  }
+
+  function openBanner() {
+    renderBanner();
+    const banner = document.getElementById('cookie-consent-banner');
+    if (banner) {
+      setTimeout(() => banner.classList.add('cookie-banner--visible'), 10);
+    }
+  }
+
+  function closeBanner() {
+    const banner = document.getElementById('cookie-consent-banner');
+    if (banner) {
+      banner.classList.remove('cookie-banner--visible');
+      setTimeout(() => banner.remove(), 300);
+    }
+  }
+
+  const savedConsent = localStorage.getItem(CONSENT_KEY);
+  if (savedConsent === 'granted') {
+    updateGoogleConsent(true);
+  } else if (savedConsent === 'denied') {
+    updateGoogleConsent(false);
+  } else {
+    setTimeout(openBanner, 600);
+  }
+
+  window.openCookieSettings = function(e) {
+    if (e) e.preventDefault();
+    openBanner();
+  };
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#open-cookie-banner') || e.target.closest('a[href="#cookie-settings"]')) {
+      e.preventDefault();
+      openBanner();
+    }
+  });
+}
 
 /* ---------- WhatsApp Floating Widget & Modal ---------- */
 function initWhatsAppWidget() {

@@ -18,10 +18,40 @@
   </script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11364909431"></script>
   <script>
+    function updateGoogleForwardingNumber(formatted_number, mobile_number) {
+      if (!formatted_number || !mobile_number) return;
+
+      var applyForwardingNumber = function() {
+        var businessNumber = '06181 9996510';
+        var forwardingHref = 'tel:' + String(mobile_number).replace(/[^\d+]/g, '');
+
+        document.querySelectorAll('a[href="tel:+4961819996510"]').forEach(function(link) {
+          link.href = forwardingHref;
+
+          if (link.getAttribute('aria-label')) {
+            link.setAttribute('aria-label', link.getAttribute('aria-label').replace(businessNumber, formatted_number));
+          }
+
+          link.childNodes.forEach(function(node) {
+            if (node.textContent && node.textContent.indexOf(businessNumber) !== -1) {
+              node.textContent = node.textContent.replace(businessNumber, formatted_number);
+            }
+          });
+        });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyForwardingNumber, { once: true });
+      } else {
+        applyForwardingNumber();
+      }
+    }
+
     gtag('js', new Date());
     gtag('config', 'AW-11364909431');
-    gtag('config', 'AW-11364909431/_yviCI-SudkcEPeCm6sq', {
-      'phone_conversion_number': '06181 9996510'
+    gtag('config', 'AW-11364909431/d8SACOTQhpgdEPeCm6sq', {
+      'phone_conversion_number': '06181 9996510',
+      'phone_conversion_callback': updateGoogleForwardingNumber
     });
   </script>
 

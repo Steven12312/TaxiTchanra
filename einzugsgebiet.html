@@ -47,12 +47,19 @@
       }
     }
 
+    window.googleWebsiteCallTrackingInitialized = false;
+    function activateGoogleWebsiteCallTracking() {
+      if (window.googleWebsiteCallTrackingInitialized || typeof gtag !== 'function') return;
+
+      gtag('config', 'AW-11364909431/d8SACOTQhpgdEPeCm6sq', {
+        'phone_conversion_number': '06181 9996510',
+        'phone_conversion_callback': updateGoogleForwardingNumber
+      });
+      window.googleWebsiteCallTrackingInitialized = true;
+    }
+
     gtag('js', new Date());
     gtag('config', 'AW-11364909431');
-    gtag('config', 'AW-11364909431/d8SACOTQhpgdEPeCm6sq', {
-      'phone_conversion_number': '06181 9996510',
-      'phone_conversion_callback': updateGoogleForwardingNumber
-    });
   </script>
 
   <!-- SEO -->

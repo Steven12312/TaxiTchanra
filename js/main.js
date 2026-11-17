@@ -302,6 +302,10 @@ function initCookieConsent() {
         'ad_personalization': granted ? 'granted' : 'denied',
         'analytics_storage': granted ? 'granted' : 'denied'
       });
+
+      if (granted && typeof window.activateGoogleWebsiteCallTracking === 'function') {
+        window.activateGoogleWebsiteCallTracking();
+      }
     }
   }
 

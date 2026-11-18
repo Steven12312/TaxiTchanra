@@ -126,8 +126,17 @@ function initForms() {
   const forms = document.querySelectorAll('form[data-form]');
 
   forms.forEach(form => {
-    form.addEventListener('submit', (e) => {
+    const btn = form.querySelector('[type="submit"]');
+    if (!btn) return;
+
+    const originalText = btn.textContent;
+    let isSubmitting = false;
+    let statusResetTimer = null;
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      if (isSubmitting) return;
 
       // Honeypot check
       const hp = form.querySelector('.form__hp input');
@@ -151,55 +160,88 @@ function initForms() {
 
       if (!valid) return;
 
-      const btn = form.querySelector('[type="submit"]');
-      const originalText = btn.textContent;
+      clearTimeout(statusResetTimer);
+      isSubmitting = true;
       btn.textContent = '⏳ Wird gesendet...';
       btn.disabled = true;
+      btn.style.background = '';
+      btn.style.color = '';
 
       const formData = new FormData(form);
       formData.append('form_type', form.dataset.form || 'Kontaktformular');
 
-      fetch('send.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
+      try {
+        const res = await fetch('send.php', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data || data.success !== true) {
+          throw new Error(data && data.message
+            ? data.message
+            : 'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut.');
+        }
+
         btn.textContent = '✓ Anfrage gesendet!';
         btn.style.background = 'var(--color-green)';
         btn.style.color = 'var(--color-white)';
 
-        setTimeout(() => {
+        trackSuccessfulFormSubmission(form);
+
+        statusResetTimer = setTimeout(() => {
           btn.textContent = originalText;
           btn.style.background = '';
           btn.style.color = '';
           btn.disabled = false;
           form.reset();
+          isSubmitting = false;
         }, 4000);
-      })
-      .catch(err => {
-        // Fallback for local dev
-        btn.textContent = '✓ Anfrage aufgenommen!';
-        btn.style.background = 'var(--color-green)';
+      } catch (err) {
+        console.error('Form submission failed:', err);
+        btn.textContent = '✕ Versand fehlgeschlagen – bitte erneut versuchen';
+        btn.style.background = 'var(--color-red)';
         btn.style.color = 'var(--color-white)';
+        btn.disabled = false;
+        isSubmitting = false;
 
-        setTimeout(() => {
+        statusResetTimer = setTimeout(() => {
           btn.textContent = originalText;
           btn.style.background = '';
           btn.style.color = '';
-          btn.disabled = false;
-          form.reset();
-        }, 4000);
-      });
-
-      if (typeof gtag === 'function') {
-        gtag('event', 'form_submit', {
-          event_category: 'Contact',
-          event_label: form.dataset.form
-        });
+        }, 6000);
       }
     });
   });
+}
+
+function trackSuccessfulFormSubmission(form) {
+  const eventNames = {
+    'landing-form': 'flughafen_formular_submit',
+    'contact-form': 'kontakt_formular_submit'
+  };
+  const eventName = eventNames[form.id];
+
+  if (!eventName || typeof gtag !== 'function') return;
+
+  let analyticsConsentGranted = false;
+  try {
+    analyticsConsentGranted = localStorage.getItem('taxi_tchanra_cookie_consent') === 'granted';
+  } catch (err) {
+    console.warn('Unable to read analytics consent:', err);
+  }
+
+  if (!analyticsConsentGranted) return;
+
+  try {
+    gtag('event', eventName, {
+      event_category: 'Contact',
+      event_label: form.dataset.form,
+      form_id: form.id
+    });
+  } catch (err) {
+    console.warn('Unable to send form analytics event:', err);
+  }
 }
 
 /* ---------- Tab Navigation ---------- */

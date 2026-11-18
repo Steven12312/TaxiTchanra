@@ -17,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Honeypot check (Spam protection)
 $honeypot = trim($_POST['website'] ?? $_POST['url'] ?? '');
 if (!empty($honeypot)) {
-    // Silent success for bots
-    echo json_encode(['success' => true, 'message' => 'Nachricht gesendet.']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Die Anfrage konnte nicht verarbeitet werden.']);
     exit;
 }
 
@@ -100,6 +100,6 @@ $mailSent = @mail($to, $emailSubject, $emailBody, implode("\r\n", $headers));
 if ($mailSent) {
     echo json_encode(['success' => true, 'message' => 'Vielen Dank! Ihre Anfrage wurde erfolgreich gesendet. Wir melden uns umgehend bei Ihnen.']);
 } else {
-    // Fallback response for local dev / unconfigured mail server
-    echo json_encode(['success' => true, 'message' => 'Vielen Dank! Ihre Anfrage wurde aufgenommen.']);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Die Anfrage konnte nicht gesendet werden. Bitte versuchen Sie es erneut oder rufen Sie uns an.']);
 }

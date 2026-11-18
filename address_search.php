@@ -5,11 +5,20 @@
    ============================================================ */
 
 header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: public, max-age=1800');
+header('Cache-Control: private, no-store, no-cache, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
-$q = isset($_GET['q']) ? trim($_GET['q']) : '';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    echo json_encode([]);
+    exit;
+}
 
-if (mb_strlen($q, 'UTF-8') < 2) {
+$q = isset($_POST['q']) ? trim($_POST['q']) : '';
+
+if (mb_strlen($q, 'UTF-8') < 2 || mb_strlen($q, 'UTF-8') > 200) {
     echo json_encode([]);
     exit;
 }

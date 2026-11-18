@@ -4,63 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Google Consent Mode v2 & Google Tag (gtag.js) -->
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('consent', 'default', {
-      'ad_storage': 'denied',
-      'ad_user_data': 'denied',
-      'ad_personalization': 'denied',
-      'analytics_storage': 'denied',
-      'wait_for_update': 500
-    });
-  </script>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-11364909431"></script>
-  <script>
-    function updateGoogleForwardingNumber(formatted_number, mobile_number) {
-      if (!formatted_number || !mobile_number) return;
-
-      var applyForwardingNumber = function() {
-        var businessNumber = '06181 9996510';
-        var forwardingHref = 'tel:' + String(mobile_number).replace(/[^\d+]/g, '');
-
-        document.querySelectorAll('a[href="tel:+4961819996510"]').forEach(function(link) {
-          link.href = forwardingHref;
-
-          if (link.getAttribute('aria-label')) {
-            link.setAttribute('aria-label', link.getAttribute('aria-label').replace(businessNumber, formatted_number));
-          }
-
-          link.childNodes.forEach(function(node) {
-            if (node.textContent && node.textContent.indexOf(businessNumber) !== -1) {
-              node.textContent = node.textContent.replace(businessNumber, formatted_number);
-            }
-          });
-        });
-      };
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', applyForwardingNumber, { once: true });
-      } else {
-        applyForwardingNumber();
-      }
-    }
-
-    window.googleWebsiteCallTrackingInitialized = false;
-    function activateGoogleWebsiteCallTracking() {
-      if (window.googleWebsiteCallTrackingInitialized || typeof gtag !== 'function') return;
-
-      gtag('config', 'AW-11364909431/d8SACOTQhpgdEPeCm6sq', {
-        'phone_conversion_number': '06181 9996510',
-        'phone_conversion_callback': updateGoogleForwardingNumber
-      });
-      window.googleWebsiteCallTrackingInitialized = true;
-    }
-
-    gtag('js', new Date());
-    gtag('config', 'AW-11364909431');
-  </script>
+  <!-- Google-Dienste werden erst nach Einwilligung durch js/main.js geladen. -->
 
   <!-- SEO -->
   <title>Kontakt & Impressum – Taxi Hanau Tchanra | 06181 9996510</title>
@@ -437,15 +381,33 @@
 
             <h3>3. Datenerfassung auf dieser Website</h3>
 
-            <h3>Cookies &amp; Google Tag (Google Ads Tracking)</h3>
+            <h3>Cookies, Google Analytics und Google Ads</h3>
             <p>
-              Unsere Website nutzt den <strong>Google Tag (gtag.js)</strong> mit der Tag-ID <code>AW-11364909431</code> zur Conversion-Messung und Werbeoptimierung. Anbieter ist Google Ireland Limited („Google“), Gordon House, Barrow Street, Dublin 4, Irland.
+              Mit Ihrer Einwilligung nutzt unsere Website Google Analytics 4
+              (<code>G-FTW99X5SP5</code>) sowie den Google Tag für Google Ads
+              (<code>AW-11364909431</code>). Anbieter ist Google Ireland Limited („Google“),
+              Gordon House, Barrow Street, Dublin 4, Irland.
             </p>
             <p>
-              <strong>Google Consent Mode v2 (DSGVO-Konformität):</strong> Um Ihre Privatsphäre zu schützen, wird der Google Tag standardmäßig im Einwilligungsmodus (Consent Mode v2) betrieben. Das bedeutet, dass Werbe- und Analytics-Cookies initial deaktiviert sind (<code>'denied'</code>). Erst wenn Sie im Cookie-Consent-Banner aktiv Ihre Einwilligung erteilen („Alle akzeptieren“), werden Tracking-Cookies und Werbe-Identifikatoren aktiviert.
+              Wir verwenden den Basic Consent Mode. Vor Ihrer Auswahl sowie nach einer Ablehnung
+              wird kein Google-Tracking-Skript geladen und es werden keine Messdaten an Google
+              übertragen. Sie können Statistik und Marketing getrennt auswählen. Statistik umfasst
+              die Reichweitenmessung und die Erfassung erfolgreich versendeter Formulare. Marketing
+              umfasst Google-Ads-Conversions, Telefonklicks und die dynamische Anzeige einer
+              Google-Weiterleitungsnummer für Besucher aus geeigneten Anzeigen.
             </p>
             <p>
-              <strong>Rechtsgrundlage &amp; Widerruf:</strong> Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG. Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen, indem Sie unten auf unserer Website auf den Link <strong>„Cookie-Einstellungen“</strong> klicken und Ihre Auswahl anpassen.
+              Die Formularereignisse enthalten ausschließlich die Formularart und Formular-ID, keine
+              Namen, Telefonnummern, E-Mail-Adressen, Adressen oder Nachrichteninhalte. Bei der
+              Website-Anrufmessung kann Google Informationen wie Zeitpunkt, Dauer und Zuordnung
+              eines Anrufs zu einer Anzeige verarbeiten.
+            </p>
+            <p>
+              <strong>Rechtsgrundlage &amp; Widerruf:</strong> Die Verarbeitung erfolgt auf Grundlage
+              Ihrer Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG. Über
+              <strong>„Cookie-Einstellungen“</strong> können Sie die Auswahl jederzeit ändern. Beim
+              Widerruf werden erreichbare Google-Cookies und lokale Google-Kennungen gelöscht und
+              die Seite ohne Google-Tracking neu geladen.
             </p>
 
             <h3>Kontaktformular</h3>
@@ -515,12 +477,19 @@
               externen Servern wie Google Fonts geladen.
             </p>
 
-            <h3>6. Adress-Vorschlagsfunktion &amp; OpenStreetMap (Opt-In)</h3>
+            <h3>6. Adress-Vorschlagsfunktion mit Photon/Komoot</h3>
             <p>
-              In unseren Buchungsformularen bieten wir eine lokale Adress-Vorschlagsfunktion an. Standardmäßig werden alle Vorschläge lokal auf Ihrem Endgerät verarbeitet, ohne dass personenbezogene Daten an externe Server übertragen werden.
+              Abholadressen können immer manuell eingegeben werden. Eine Eingabe wird standardmäßig
+              nicht an einen Kartendienst übertragen. Erst wenn Sie die Schaltfläche
+              „Adresssuche aktivieren“ betätigen, werden anschließend eingegebene Suchbegriffe über
+              unseren Webserver an den Geodienst Photon/Komoot übertragen, um passende Vorschläge
+              abzurufen.
             </p>
             <p>
-              Falls Sie die erweiterte Live-Online-Adresssuche per Button aktivieren, werden Suchanfragen an den Geodienst OpenStreetMap / Photon übertragen. Die Verarbeitung erfolgt ausschließlich nach Ihrer ausdrücklichen Aktivierung (Einwilligung gem. Art. 6 Abs. 1 lit. a DSGVO).
+              Ihre IP-Adresse wird dabei nicht direkt an Photon/Komoot übermittelt; der Dienst erhält
+              jedoch den eingegebenen Suchbegriff und die IP-Adresse unseres Webservers. Die Aktivierung
+              gilt nur für die aktuell geöffnete Seite. Die Verarbeitung erfolgt auf Grundlage Ihrer
+              Einwilligung gemäß Art. 6 Abs. 1 lit. a DSGVO.
             </p>
 
             <h3>7. Ihre Rechte</h3>

@@ -3,7 +3,171 @@
    Navigation, Scroll Animations, Forms, FAQ Accordion, Tabs
    ============================================================ */
 
+const CONSENT_KEY = 'taxi_tchanra_cookie_consent';
+const CONSENT_VERSION = 2;
+const GOOGLE_ADS_ID = 'AW-11364909431';
+const GOOGLE_ANALYTICS_ID = 'G-FTW99X5SP5';
+const GOOGLE_CALL_CONVERSION_ID = 'AW-11364909431/d8SACOTQhpgdEPeCm6sq';
+const BUSINESS_PHONE_DISPLAY = '06181 9996510';
+const BUSINESS_PHONE_HREF = 'tel:+4961819996510';
+
+window.taxiTchanraConsent = {
+  decided: false,
+  statistics: false,
+  marketing: false
+};
+window.googleTagLoadingStarted = false;
+window.googleWebsiteCallTrackingInitialized = false;
+
+function readConsentPreferences() {
+  let storedValue = null;
+
+  try {
+    storedValue = localStorage.getItem(CONSENT_KEY);
+  } catch (err) {
+    console.warn('Unable to read consent preferences:', err);
+  }
+
+  if (!storedValue) return { ...window.taxiTchanraConsent };
+
+  // Preserve decisions made with the previous all-or-nothing banner.
+  if (storedValue === 'granted') {
+    return { decided: true, statistics: true, marketing: true };
+  }
+  if (storedValue === 'denied') {
+    return { decided: true, statistics: false, marketing: false };
+  }
+
+  try {
+    const parsed = JSON.parse(storedValue);
+    if (parsed.version !== CONSENT_VERSION) return { ...window.taxiTchanraConsent };
+
+    return {
+      decided: true,
+      statistics: parsed.statistics === true,
+      marketing: parsed.marketing === true
+    };
+  } catch (err) {
+    console.warn('Unable to parse consent preferences:', err);
+    return { ...window.taxiTchanraConsent };
+  }
+}
+
+function hasTrackingConsent(category) {
+  return window.taxiTchanraConsent.decided === true &&
+    window.taxiTchanraConsent[category] === true;
+}
+
+function persistConsentPreferences(preferences) {
+  const value = {
+    version: CONSENT_VERSION,
+    statistics: preferences.statistics === true,
+    marketing: preferences.marketing === true,
+    updatedAt: new Date().toISOString()
+  };
+
+  localStorage.setItem(CONSENT_KEY, JSON.stringify(value));
+}
+
+function clearRevokedGoogleBrowserData(preferences) {
+  const shouldDeleteCookie = name =>
+    (!preferences.statistics && /^(_ga|_gid|_gat)/.test(name)) ||
+    (!preferences.marketing && /^(_gcl|_gac)/.test(name));
+  const host = window.location.hostname;
+
+  document.cookie.split(';').forEach(cookie => {
+    const name = cookie.split('=')[0].trim();
+    if (!shouldDeleteCookie(name)) return;
+
+    document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
+    document.cookie = `${name}=; Max-Age=0; Path=/; Domain=${host}; SameSite=Lax`;
+    document.cookie = `${name}=; Max-Age=0; Path=/; Domain=.${host}; SameSite=Lax`;
+  });
+
+  [localStorage, sessionStorage].forEach(storage => {
+    try {
+      Object.keys(storage).forEach(key => {
+        const isMarketingKey = key.startsWith('_gcl') || key.includes('d8SACOTQhpgdEPeCm6sq');
+        if (key !== CONSENT_KEY && !preferences.marketing && isMarketingKey) {
+          storage.removeItem(key);
+        }
+      });
+    } catch (err) {
+      console.warn('Unable to clear Google browser data:', err);
+    }
+  });
+}
+
+function updateGoogleForwardingNumber(formattedNumber, mobileNumber) {
+  if (!formattedNumber || !mobileNumber || !hasTrackingConsent('marketing')) return;
+
+  const forwardingHref = 'tel:' + String(mobileNumber).replace(/[^\d+]/g, '');
+  document.querySelectorAll(`a[href="${BUSINESS_PHONE_HREF}"]`).forEach(link => {
+    link.href = forwardingHref;
+
+    if (link.getAttribute('aria-label')) {
+      link.setAttribute('aria-label',
+        link.getAttribute('aria-label').replace(BUSINESS_PHONE_DISPLAY, formattedNumber));
+    }
+
+    link.childNodes.forEach(node => {
+      if (node.textContent && node.textContent.includes(BUSINESS_PHONE_DISPLAY)) {
+        node.textContent = node.textContent.replace(BUSINESS_PHONE_DISPLAY, formattedNumber);
+      }
+    });
+  });
+}
+
+function activateGoogleWebsiteCallTracking() {
+  if (window.googleWebsiteCallTrackingInitialized ||
+      !hasTrackingConsent('marketing') || typeof window.gtag !== 'function') return;
+
+  window.gtag('config', GOOGLE_CALL_CONVERSION_ID, {
+    phone_conversion_number: BUSINESS_PHONE_DISPLAY,
+    phone_conversion_callback: updateGoogleForwardingNumber
+  });
+  window.googleWebsiteCallTrackingInitialized = true;
+}
+
+function loadConsentedGoogleServices() {
+  const statistics = hasTrackingConsent('statistics');
+  const marketing = hasTrackingConsent('marketing');
+  if ((!statistics && !marketing) || window.googleTagLoadingStarted) return;
+
+  window.googleTagLoadingStarted = true;
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function() {
+    window.dataLayer.push(arguments);
+  };
+
+  // Basic Consent Mode: the consent choice is queued before Google code is loaded.
+  window.gtag('consent', 'default', {
+    analytics_storage: statistics ? 'granted' : 'denied',
+    ad_storage: marketing ? 'granted' : 'denied',
+    ad_user_data: marketing ? 'granted' : 'denied',
+    ad_personalization: marketing ? 'granted' : 'denied'
+  });
+  window.gtag('js', new Date());
+
+  if (statistics) {
+    window.gtag('config', GOOGLE_ANALYTICS_ID);
+  }
+  if (marketing) {
+    // GA4 page views are configured separately by the statistics category.
+    window.gtag('config', GOOGLE_ADS_ID, { send_page_view: false });
+    activateGoogleWebsiteCallTracking();
+  }
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.id = 'google-tag-script';
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${statistics ? GOOGLE_ANALYTICS_ID : GOOGLE_ADS_ID}`;
+  script.onerror = () => console.warn('Google Tag could not be loaded.');
+  document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initCookieConsent();
   initNavigation();
   initScrollReveal();
   initFAQ();
@@ -13,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initGoogleMapsConsent();
   initWhatsAppWidget();
   initAddressAutocomplete();
-  initCookieConsent();
 });
 
 /* ---------- Sticky Header ---------- */
@@ -224,20 +387,14 @@ function trackSuccessfulFormSubmission(form) {
 
   if (!eventName || typeof gtag !== 'function') return;
 
-  let analyticsConsentGranted = false;
-  try {
-    analyticsConsentGranted = localStorage.getItem('taxi_tchanra_cookie_consent') === 'granted';
-  } catch (err) {
-    console.warn('Unable to read analytics consent:', err);
-  }
-
-  if (!analyticsConsentGranted) return;
+  if (!hasTrackingConsent('statistics')) return;
 
   try {
     gtag('event', eventName, {
       event_category: 'Contact',
       event_label: form.dataset.form,
-      form_id: form.id
+      form_id: form.id,
+      send_to: GOOGLE_ANALYTICS_ID
     });
   } catch (err) {
     console.warn('Unable to send form analytics event:', err);
@@ -321,10 +478,11 @@ function initGoogleMapsConsent() {
 /* ---------- Phone Click Tracking ---------- */
 document.addEventListener('click', (e) => {
   const phoneLink = e.target.closest('a[href^="tel:"]');
-  if (phoneLink && typeof gtag === 'function') {
+  if (phoneLink && hasTrackingConsent('marketing') && typeof window.gtag === 'function') {
     gtag('event', 'phone_click', {
       event_category: 'Contact',
-      event_label: phoneLink.href
+      event_label: phoneLink.href,
+      send_to: GOOGLE_ADS_ID
     });
     gtag('event', 'conversion', {
       'send_to': 'AW-11364909431/phone_click'
@@ -332,51 +490,53 @@ document.addEventListener('click', (e) => {
   }
 });
 
-/* ---------- Cookie Consent Management (DSGVO / Consent Mode v2) ---------- */
+/* ---------- Cookie Consent Management (Basic Consent Mode) ---------- */
 function initCookieConsent() {
-  const CONSENT_KEY = 'taxi_tchanra_cookie_consent';
-
-  function updateGoogleConsent(granted) {
-    if (typeof gtag === 'function') {
-      gtag('consent', 'update', {
-        'ad_storage': granted ? 'granted' : 'denied',
-        'ad_user_data': granted ? 'granted' : 'denied',
-        'ad_personalization': granted ? 'granted' : 'denied',
-        'analytics_storage': granted ? 'granted' : 'denied'
-      });
-
-      if (granted && typeof window.activateGoogleWebsiteCallTracking === 'function') {
-        window.activateGoogleWebsiteCallTracking();
-      }
-    }
-  }
-
   function renderBanner() {
     if (document.getElementById('cookie-consent-banner')) return;
+
+    const preferences = window.taxiTchanraConsent;
 
     const banner = document.createElement('div');
     banner.id = 'cookie-consent-banner';
     banner.className = 'cookie-banner';
     banner.setAttribute('role', 'dialog');
     banner.setAttribute('aria-live', 'polite');
-    banner.setAttribute('aria-label', 'Cookie-Einwilligung');
+    banner.setAttribute('aria-labelledby', 'cookie-banner-title');
 
     banner.innerHTML = `
       <div class="cookie-banner__content">
         <div class="cookie-banner__text">
-          <div class="cookie-banner__title">🍪 Privatsphäre-Einstellungen</div>
+          <div class="cookie-banner__title" id="cookie-banner-title">Privatsphäre-Einstellungen</div>
           <p>
-            Wir nutzen den <strong>Google Tag</strong> zur Messung von Conversions und Anfragen, um unseren Service zu optimieren. 
-            Sie können selbst entscheiden, welche Cookies Sie zulassen möchten. Details finden Sie in unserer 
+            Optionale Google-Dienste werden erst nach Ihrer Auswahl geladen. Telefon, Formulare und die Website
+            funktionieren auch ohne Einwilligung. Details finden Sie in unserer
             <a href="kontakt.html#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.
           </p>
+          <div class="cookie-banner__choices">
+            <div class="cookie-banner__choice cookie-banner__choice--essential">
+              <span><strong>Erforderlich</strong><small>Speichert ausschließlich Ihre Datenschutzauswahl.</small></span>
+              <span class="cookie-banner__required">Immer aktiv</span>
+            </div>
+            <label class="cookie-banner__choice" for="cookie-statistics">
+              <span><strong>Statistik</strong><small>Google Analytics und erfolgreiche Formularanfragen.</small></span>
+              <input type="checkbox" id="cookie-statistics" ${preferences.statistics ? 'checked' : ''}>
+            </label>
+            <label class="cookie-banner__choice" for="cookie-marketing">
+              <span><strong>Marketing</strong><small>Google Ads, Telefonklicks und Google-Weiterleitungsnummer.</small></span>
+              <input type="checkbox" id="cookie-marketing" ${preferences.marketing ? 'checked' : ''}>
+            </label>
+          </div>
         </div>
         <div class="cookie-banner__actions">
-          <button type="button" class="cookie-banner__btn cookie-banner__btn--accept" id="cookie-accept-all">
-            Alle akzeptieren
+          <button type="button" class="cookie-banner__btn cookie-banner__btn--choice" id="cookie-deny-all">
+            Alle ablehnen
           </button>
-          <button type="button" class="cookie-banner__btn cookie-banner__btn--deny" id="cookie-deny-all">
-            Nur essenzielle
+          <button type="button" class="cookie-banner__btn cookie-banner__btn--save" id="cookie-save-selection">
+            Auswahl speichern
+          </button>
+          <button type="button" class="cookie-banner__btn cookie-banner__btn--choice" id="cookie-accept-all">
+            Alle akzeptieren
           </button>
         </div>
       </div>
@@ -385,16 +545,44 @@ function initCookieConsent() {
     document.body.appendChild(banner);
 
     document.getElementById('cookie-accept-all').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, 'granted');
-      updateGoogleConsent(true);
-      closeBanner();
+      savePreferences({ statistics: true, marketing: true });
     });
-
     document.getElementById('cookie-deny-all').addEventListener('click', () => {
-      localStorage.setItem(CONSENT_KEY, 'denied');
-      updateGoogleConsent(false);
-      closeBanner();
+      savePreferences({ statistics: false, marketing: false });
     });
+    document.getElementById('cookie-save-selection').addEventListener('click', () => {
+      savePreferences({
+        statistics: document.getElementById('cookie-statistics').checked,
+        marketing: document.getElementById('cookie-marketing').checked
+      });
+    });
+  }
+
+  function savePreferences(preferences) {
+    const previouslyLoaded = window.googleTagLoadingStarted;
+    const changed = preferences.statistics !== window.taxiTchanraConsent.statistics ||
+      preferences.marketing !== window.taxiTchanraConsent.marketing;
+
+    try {
+      persistConsentPreferences(preferences);
+    } catch (err) {
+      console.warn('Unable to save consent preferences:', err);
+      return;
+    }
+
+    window.taxiTchanraConsent = { decided: true, ...preferences };
+
+    clearRevokedGoogleBrowserData(preferences);
+
+    // Once Google code was loaded, a clean reload is the reliable way to revoke
+    // permissions and restore the original phone number without sending an update ping.
+    if (previouslyLoaded && changed) {
+      window.location.reload();
+      return;
+    }
+
+    loadConsentedGoogleServices();
+    closeBanner();
   }
 
   function openBanner() {
@@ -402,6 +590,7 @@ function initCookieConsent() {
     const banner = document.getElementById('cookie-consent-banner');
     if (banner) {
       setTimeout(() => banner.classList.add('cookie-banner--visible'), 10);
+      setTimeout(() => document.getElementById('cookie-deny-all')?.focus(), 20);
     }
   }
 
@@ -413,11 +602,20 @@ function initCookieConsent() {
     }
   }
 
-  const savedConsent = localStorage.getItem(CONSENT_KEY);
-  if (savedConsent === 'granted') {
-    updateGoogleConsent(true);
-  } else if (savedConsent === 'denied') {
-    updateGoogleConsent(false);
+  const savedConsent = readConsentPreferences();
+  window.taxiTchanraConsent = savedConsent;
+
+  if (savedConsent.decided) {
+    try {
+      persistConsentPreferences(savedConsent);
+    } catch (err) {
+      console.warn('Unable to migrate consent preferences:', err);
+    }
+
+    clearRevokedGoogleBrowserData(savedConsent);
+    if (savedConsent.statistics || savedConsent.marketing) {
+      loadConsentedGoogleServices();
+    }
   } else {
     setTimeout(openBanner, 600);
   }
@@ -431,6 +629,12 @@ function initCookieConsent() {
     if (e.target.closest('#open-cookie-banner') || e.target.closest('a[href="#cookie-settings"]')) {
       e.preventDefault();
       openBanner();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('cookie-consent-banner')) {
+      closeBanner();
     }
   });
 }
@@ -514,11 +718,15 @@ function initWhatsAppWidget() {
 function initAddressAutocomplete() {
   const input = document.getElementById('landing-pickup');
   const resultsList = document.getElementById('autocomplete-results');
+  const enableButton = document.getElementById('enable-address-search');
+  const status = document.getElementById('address-search-status');
 
-  if (!input || !resultsList) return;
+  if (!input || !resultsList || !enableButton) return;
 
   let debounceTimer = null;
+  let activeRequest = null;
   let activeIndex = -1;
+  let searchEnabled = false;
 
   function hideResults() {
     resultsList.hidden = true;
@@ -565,25 +773,50 @@ function initAddressAutocomplete() {
       return;
     }
 
-    const apiUrl = `address_search.php?q=${encodeURIComponent(query)}`;
+    if (!searchEnabled) return;
 
-    fetch(apiUrl)
-      .then(res => res.json())
+    if (activeRequest) activeRequest.abort();
+    activeRequest = new AbortController();
+
+    fetch('address_search.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+      body: `q=${encodeURIComponent(query)}`,
+      signal: activeRequest.signal
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`Address search failed with status ${res.status}`);
+        return res.json();
+      })
       .then(items => {
         showResults(items);
       })
       .catch(err => {
+        if (err.name === 'AbortError') return;
         console.warn('Address search unavailable:', err);
         hideResults();
       });
   }
 
-  // Handle Input Typing (Automatic as user types)
+  enableButton.addEventListener('click', () => {
+    searchEnabled = true;
+    enableButton.classList.add('btn-optin-live--active');
+    enableButton.textContent = 'Adresssuche aktiv';
+    enableButton.setAttribute('aria-pressed', 'true');
+    enableButton.disabled = true;
+    if (status) status.textContent = 'Automatische Vorschläge sind für diese Seite aktiviert.';
+
+    const currentValue = input.value.trim();
+    if (currentValue.length >= 2) fetchAddressSuggestions(currentValue);
+    input.focus();
+  });
+
+  // Manual entry never triggers a request until the separate opt-in was used.
   input.addEventListener('input', () => {
     const val = input.value.trim();
     clearTimeout(debounceTimer);
 
-    if (val.length < 2) {
+    if (!searchEnabled || val.length < 2) {
       hideResults();
       return;
     }

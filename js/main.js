@@ -511,7 +511,7 @@ function initCookieConsent() {
           <p>
             Optionale Google-Dienste werden erst nach Ihrer Auswahl geladen. Telefon, Formulare und die Website
             funktionieren auch ohne Einwilligung. Details finden Sie in unserer
-            <a href="kontakt.html#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.
+            <a href="/kontakt#datenschutz" target="_blank" rel="noopener">Datenschutzerklärung</a>.
           </p>
           <div class="cookie-banner__choices">
             <div class="cookie-banner__choice cookie-banner__choice--essential">
@@ -664,7 +664,7 @@ function initWhatsAppWidget() {
         <div class="wa-modal-check">
           <input type="checkbox" id="wa-consent-check">
           <label for="wa-consent-check">
-            Ich habe die <a href="kontakt.html#datenschutz" target="_blank" style="color:var(--color-gold); text-decoration:underline;">Datenschutzerklärung</a> zur Kenntnis genommen und stimme der Übermittlung an WhatsApp zu. *
+            Ich habe die <a href="/kontakt#datenschutz" target="_blank" style="color:var(--color-gold); text-decoration:underline;">Datenschutzerklärung</a> zur Kenntnis genommen und stimme der Übermittlung an WhatsApp zu. *
           </label>
         </div>
         <button class="wa-modal-btn" id="wa-go-btn">

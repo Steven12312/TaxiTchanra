@@ -145,12 +145,16 @@ function loadConsentedGoogleServices() {
     analytics_storage: statistics ? 'granted' : 'denied',
     ad_storage: marketing ? 'granted' : 'denied',
     ad_user_data: marketing ? 'granted' : 'denied',
-    ad_personalization: marketing ? 'granted' : 'denied'
+    ad_personalization: 'denied'
   });
+  window.gtag('set', 'allow_ad_personalization_signals', false);
   window.gtag('js', new Date());
 
   if (statistics) {
-    window.gtag('config', GOOGLE_ANALYTICS_ID);
+    window.gtag('config', GOOGLE_ANALYTICS_ID, {
+      allow_google_signals: false,
+      allow_ad_personalization_signals: false
+    });
   }
   if (marketing) {
     // GA4 page views are configured separately by the statistics category.

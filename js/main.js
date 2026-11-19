@@ -5,6 +5,7 @@
 
 const CONSENT_KEY = 'taxi_tchanra_cookie_consent';
 const CONSENT_VERSION = 2;
+const CONSENT_MAX_AGE = 60 * 60 * 24 * 365;
 const GOOGLE_ADS_ID = 'AW-11364909431';
 const GOOGLE_ANALYTICS_ID = 'G-FTW99X5SP5';
 const GOOGLE_CALL_CONVERSION_ID = 'AW-11364909431/d8SACOTQhpgdEPeCm6sq';
@@ -23,7 +24,18 @@ function readConsentPreferences() {
   let storedValue = null;
 
   try {
-    storedValue = localStorage.getItem(CONSENT_KEY);
+    const cookiePrefix = `${CONSENT_KEY}=`;
+    const consentCookie = document.cookie
+      .split(';')
+      .map(cookie => cookie.trim())
+      .find(cookie => cookie.startsWith(cookiePrefix));
+
+    if (consentCookie) {
+      storedValue = decodeURIComponent(consentCookie.slice(cookiePrefix.length));
+    } else {
+      // Migrate decisions stored by the previous localStorage implementation.
+      storedValue = localStorage.getItem(CONSENT_KEY);
+    }
   } catch (err) {
     console.warn('Unable to read consent preferences:', err);
   }
@@ -66,7 +78,19 @@ function persistConsentPreferences(preferences) {
     updatedAt: new Date().toISOString()
   };
 
-  localStorage.setItem(CONSENT_KEY, JSON.stringify(value));
+  const secureAttribute = window.location.protocol === 'https:' ? '; Secure' : '';
+  const encodedValue = encodeURIComponent(JSON.stringify(value));
+  document.cookie = `${CONSENT_KEY}=${encodedValue}; Max-Age=${CONSENT_MAX_AGE}; Path=/; SameSite=Lax${secureAttribute}`;
+
+  if (!document.cookie.split(';').some(cookie => cookie.trim().startsWith(`${CONSENT_KEY}=`))) {
+    throw new Error('Consent cookie could not be stored.');
+  }
+
+  try {
+    localStorage.removeItem(CONSENT_KEY);
+  } catch (err) {
+    console.warn('Unable to remove legacy consent preferences:', err);
+  }
 }
 
 function clearRevokedGoogleBrowserData(preferences) {
